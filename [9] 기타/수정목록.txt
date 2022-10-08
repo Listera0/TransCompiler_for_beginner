@@ -1,0 +1,11 @@
+2022 10 08 Sat
+
+수정사항 :
+	모든 폴더내 이름 수정 USECASEStatement -> UseCase_Statement
+	폐기문서 폴더 생성 
+	C# 폴더 내 파일 일부 폐기문서로 이동
+	Java 폴더 내 파일 추가 및 수정
+	WebSite 폴더 내 StoryBoard 수정
+
+수정요구사항 :
+	구축 폴더내 WBS, 일정관리, 프로젝트정의서, 프로젝트관리계획서 최신화
