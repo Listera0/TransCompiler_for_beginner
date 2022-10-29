@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang = "ko">
+
+<html>
+    <head>
+        <title>
+            TransCompiler for beginner
+        </title>
+
+            <style>
+                .select {margin-left : 220px; margin-right : 100px; width : 100pt; height : 30pt}
+                .select2 {margin-left : 220px; width : 100pt; height : 30pt}
+            </style> 
+
+    </head>
+    <body>
+        <h3>TransCompiler for beginner</h3>
+        <hr>
+        <form>
+            <textarea style = "margin-right :  100px; margin-left : 100px;" placeholder = "번역 할 코드 입력" rows = "30" cols = "50"></textarea>
+
+            <textarea rows = "30" cols = "50"></textarea> <br />
+
+                <p><select name = "language" class = "select">
+                    <option value = "none" selected>===언어 선택===</option>
+                    <option value = "1">C</option>
+                    <option value = "2">C#</option>
+                    <option value = "3">C++</option>
+                    <option value = "4">Python</option>
+                    <option value = "5">Java</option>
+                </select>
+
+                <select name = "language" class = "select2">
+                    <option value = "none" selected>===언어 선택===</option>
+                    <option value = "1">C</option>
+                    <option value = "2">C#</option>
+                    <option value = "3">C++</option>
+                    <option value = "4">Python</option>
+                    <option value = "5">Java</option>
+                </select>
+                <center> <p> <input type = "button" value = "번역" style = "width : 60pt; height : 30pt">  </center>
+
+
+        </form>
+
+    </body>
+</html>
