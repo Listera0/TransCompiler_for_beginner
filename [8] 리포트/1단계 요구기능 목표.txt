@@ -1,0 +1,9 @@
+1단계
+
+FrontEnd
+	HTML 작업 (사이트 형태 만들기)		O
+	백엔드와 연동				O
+
+BackEnd
+	선언문 구현					O
+	IF문 구현					X
