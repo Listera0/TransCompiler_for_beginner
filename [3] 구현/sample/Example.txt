@@ -1,0 +1,26 @@
+## Announce 문
+
+static int i = 0;
+public string name = "HO";
+private char OX = 'O';
+protected bool = True;
+
+
+
+## If 문
+
+int i = 0;
+if(i == 0)
+{
+    i = 1;
+}
+
+
+
+## For 문
+
+int j = 0;
+for(int i = 0; i < 10; i = i + 1)
+{
+    j = j + i;
+}
