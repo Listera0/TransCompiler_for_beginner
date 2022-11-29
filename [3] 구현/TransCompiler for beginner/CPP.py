@@ -12,7 +12,7 @@ ConditionOperator = [">", "<", ">=", "<=", "==", "!="]
 AnnounceOperator = ["=", "+=", "-=", "++", "--"]
 StartRange = ["(", "{", "["]
 EndRange = [")", "}", "]"]
-CPPAccessModifier = ["public", "private", "protected", "default"]
+CPPAccessModifier = ["public", "private", "protected"]
 CPPDataType = ["int", "string", "long", "char", "bool", "double", "shot", "float"]
 CPPStatic = ["static"]
 
