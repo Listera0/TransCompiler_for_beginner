@@ -31,19 +31,18 @@ def Converting( code, in_lan, out_lan ):
     elif in_lan == "4":
         pass
     elif in_lan == "5":
-        pass
+        temp1 = Java.Extraction(code)
     
     if out_lan == "1":
         pass
     elif out_lan == "2":
-        pass
+        temp2 = CS.ConvertCodeToCS(temp1, 0)
     elif out_lan == "3":
         pass
     elif out_lan == "4":
-        temp2 = Python.ConvertCode(temp1, 0)
-        pass
+        temp2 = Python.ConvertCodeToPython(temp1, 0)
     elif out_lan == "5":
-        temp2 = Java.ConvertCode(temp1, 0)
+        temp2 = Java.ConvertCodeToJava(temp1, 0)
     
     return temp2
 

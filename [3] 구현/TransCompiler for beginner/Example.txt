@@ -2,9 +2,8 @@
 
 static int i = 0;
 public string name = "HO";
+protected bool isture = True;
 private char OX = 'O';
-protected bool = True;
-
 
 
 ## If 문

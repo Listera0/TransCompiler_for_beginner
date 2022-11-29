@@ -1,20 +1,136 @@
 from ast import Compare
 from os import sep
 from typing import Container
+from inspect import indentsize
 
-BaseRule    = ["string", "int", "char"]
-CSRule      = ["string", "int", "char"]
+BaseRule    = []
+CSRule      = []
 
 WordEndList = [" ", "=", ";", "(", ")", "{", "}", "[", "]", ">", "<", "\n", "\r"]
 
-CompareOperator = [">", "<", ">=", "<=", "==", "!="]
+ConditionOperator = [">", "<", ">=", "<=", "==", "!="]
+AnnounceOperator = ["=", "+=", "-=", "++", "--"]
 StartRange = ["(", "{", "["]
 EndRange = [")", "}", "]"]
 CSAccessModifier = ["public", "private", "protected", "default"]
-CSDataType = ["int", "string", "long", "char"]
+CSDataType = ["int", "string", "long", "char", "bool", "double", "shot", "float"]
 CSStatic = ["static"]
 
 ContainAll = CSAccessModifier + CSDataType + CSStatic
+
+## 코드 변환 base -> CS
+def ConvertCodeToCS( container, depth ):
+    result = container
+    
+    for i in range(0, len(container.Announces)):
+        if result.Announces[i].AccessModifier in BaseRule:
+            result.Announces[i].AccessModifier = CSRule[BaseRule.index(result.Announces[i].AccessModifier)]
+        elif result.Announces[i].StaticModifier in BaseRule:
+            result.Announces[i].StaticModifier = CSRule[BaseRule.index(result.Announces[i].StaticModifier)]
+        elif result.Announces[i].DataType in BaseRule:
+            result.Announces[i].DataType = CSRule[BaseRule.index(result.Announces[i].DataType)]
+      
+    return CombineCode(result, depth)
+
+## 코드 변환 CS -> base
+def ConvertCodeToBase( container ):
+    result = container
+    
+    for i in range(0, len(container.Announces)):
+        if result.Announces[i].AccessModifier in CSRule:
+            result.Announces[i].AccessModifier = BaseRule[CSRule.index(result.Announces[i].AccessModifier)]
+        elif result.Announces[i].StaticModifier in CSRule:
+            result.Announces[i].StaticModifier = BaseRule[CSRule.index(result.Announces[i].StaticModifier)]
+        elif result.Announces[i].DataType in CSRule:
+            result.Announces[i].DataType = BaseRule[CSRule.index(result.Announces[i].DataType)]
+    
+    return result
+    
+
+## 코드 결합
+def CombineCode( code, depth ):
+    result = ""
+    
+    for i in range(0, len(code.Announces)):
+        temp = ""
+        temp += IndentSpace(depth)
+        
+        if code.Announces[i].AccessModifier != "default":
+            temp += code.Announces[i].AccessModifier + " "
+        if code.Announces[i].StaticModifier != "default":
+            temp += code.Announces[i].StaticModifier + " "
+        if code.Announces[i].DataType != "default" and code.Announces[i].ArrayValue == None:
+            temp += code.Announces[i].DataType + " "
+        elif code.Announces[i].DataType != "default" and code.Announces[i].ArrayValue != None:
+            temp += code.Announces[i].DataType + "[" + code.Announces[i].ArrayValue + "] "
+        temp += code.Announces[i].Name
+        if code.Announces[i].Value != None:
+            temp += " = "
+            temp += code.Announces[i].Value
+        temp += ";"
+        temp += "\n"
+        result += temp
+    
+    for i in range(0, len(code.IfMethods)):
+        temp = ""
+        
+        for j in range(0, len(code.IfMethods[i].Condition)):
+            temp += IndentSpace(depth)
+            
+            if j != 0:
+                temp += "else "
+            
+            temp += "if (" + code.IfMethods[i].Condition[j].Target + " " + code.IfMethods[i].Condition[j].Operator + code.IfMethods[i].Condition[j].Value + ")\n"
+            
+            temp += IndentSpace(depth)+ "{\n"
+            depth += 1
+            temp += ConvertCodeToCS(code.IfMethods[i].Value[j], depth)
+            depth -= 1
+            temp += IndentSpace(depth) + "}\n"
+            
+        if code.IfMethods[i].Else != None:
+            temp += IndentSpace(depth) + "else\n"
+            
+            temp += IndentSpace(depth) + "{\n"
+            depth += 1
+            temp += ConvertCodeToCS(code.IfMethods[i].Else, depth) + "\n"
+            depth -= 1
+            temp += IndentSpace(depth) + "}\n"
+    
+        result += temp
+        
+    for i in range(0, len(code.ForMethods)):
+        temp = ""
+        temp += IndentSpace(depth)
+        
+        tempCon = Container()
+        
+        tempCon.AddAnnounces(code.ForMethods[i].Announce)
+        
+        temp += "for(" + ConvertCodeToCS(tempCon, 0).replace('\n', '') + " " 
+        temp += code.ForMethods[i].Condition.Target + " " + code.ForMethods[i].Condition.Operator + " " + code.ForMethods[i].Condition.Value + '; '
+        
+        tempCon.Announces.clear()
+        tempCon.AddAnnounces(code.ForMethods[i].Operator)
+        
+        temp += ConvertCodeToCS(tempCon, 0).replace('\n', '') + ")\n"
+        
+        tempCon.Announces.clear()
+        
+        temp += IndentSpace(depth)+ "{\n"
+        depth += 1
+        temp += ConvertCodeToCS(code.ForMethods[i].Value, depth)
+        depth -= 1
+        temp += IndentSpace(depth) + "}\n"
+        
+        result += temp
+    
+    del code
+    return result
+
+def IndentSpace(depth):
+    return " " * (depth * 4)
+
 
 ## 주어진 코드 추출
 def Extraction( code ):
@@ -57,7 +173,7 @@ def Extraction( code ):
                     while True:
                         pointA += FindRange(code[pointA : ], "{")
                         
-                        if FindNextCharLength(code[pointA + 1 : ], 4 == "else"):
+                        if FindNextCharLength(code[pointA + 1 : ], 4) == "else":
                             continue
                         
                         break
@@ -78,7 +194,8 @@ def Extraction( code ):
                     
                     finishindex = actionend + 1
                     
-    return result
+    return ConvertCodeToBase(result)
+
 
 ## 선언문 변환
 def ConvertAnnounce(code):
@@ -115,8 +232,12 @@ def ConvertAnnounce(code):
                 result.ArrayValue = code[valueindex : i]
             
         if code[i] == '=':
-                result.Value = code[FindNextCharIndex(code[i + 1 : ], FindNextChar(code[i + 1 : ])) + i + 1 : FindNextCharIndex(code, ';')]
-                return result
+            result.Value = code[FindNextCharIndex(code[i + 1 : ], FindNextChar(code[i + 1 : ])) + i + 1 : FindNextCharIndex(code, ';')]
+            return result
+            
+        elif code[i : i + 2] in AnnounceOperator:
+            result.Value = code[FindNextCharIndex(code[i + 2 : ], FindNextChar(code[i + 2 : ])) + i + 1 : FindNextCharIndex(code, ';')]
+            return result
                             
     return result
 
@@ -129,11 +250,11 @@ def ConvertCondition(code):
     result.Target = FindNextWord(code)
     index = FindNextWordLastIndex(code)
     
-    if FindNextChar(code[index : ]) in CompareOperator:
+    if FindNextChar(code[index : ]) in ConditionOperator:
         result.Operator = FindNextChar(code[index : ])
         finishindex = index + FindNextCharIndex(code[index : ], result.Operator) + 1
         
-    elif FindNextCharLength(code[index : ], 2) in CompareOperator:
+    elif FindNextCharLength(code[index : ], 2) in ConditionOperator:
         result.Operator = FindNextCharLength(code[index : ], 2)
         finishindex = index + FindNextCharIndex(code[index : ], FindNextChar(code[index : ])) + 2
         
@@ -274,17 +395,6 @@ def FindRange( code, startrange ):
             return i
         
     return 0
-    
-
-## 코드 변환 (1 = C / 2 = C# / 3 = C++ / 4 = Python / 5 = Java)
-def ConvertCode( code ):
-    result = code
-    return result
-
-## 코드 결합
-def CombineCode( code ):
-    result = ""
-    return result
 
 ## 목록
 class Container():
