@@ -1,6 +1,6 @@
 from operator import index
 from tokenize import String
-from flask import Flask, render_template, request
+from flask import Flask,request, render_template
 import C, CS, CPP, Python, Java
 
 app = Flask(__name__)
@@ -22,27 +22,32 @@ def Converting( code, in_lan, out_lan ):
     temp1 = None
     temp2 = ''
     
-     if in_lan == "1":
+    if in_lan == "1":
         temp1 = C.Extraction(code)
+        pass
     elif in_lan == "2":
         temp1 = CS.Extraction(code)
     elif in_lan == "3":
         temp1 = CPP.Extraction(code)
+        pass
     elif in_lan == "4":
         temp1 = Python.Extraction(code)
+        pass
     elif in_lan == "5":
         temp1 = Java.Extraction(code)
     
     if out_lan == "1":
-        temp2 = C.ConvertCode(temp1)
+        temp2 = C.ConvertCodeToC(temp1, 0)
+        pass
     elif out_lan == "2":
-        temp2 = CS.ConvertCode(temp1)
+        temp2 = CS.ConvertCodeToCS(temp1, 0)
     elif out_lan == "3":
-        temp2 = CPP.ConvertCode(temp1)
+        temp2 = CPP.ConvertCodeToCPP(temp1, 0)
+        pass
     elif out_lan == "4":
-        temp2 = Python.ConvertCode(temp1)
+        temp2 = Python.ConvertCodeToPython(temp1, 0)
     elif out_lan == "5":
-        temp2 = Java.ConvertCode(temp1)
+        temp2 = Java.ConvertCodeToJava(temp1, 0)
     
     return temp2
 
