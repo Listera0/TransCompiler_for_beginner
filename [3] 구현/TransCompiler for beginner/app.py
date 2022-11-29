@@ -22,27 +22,27 @@ def Converting( code, in_lan, out_lan ):
     temp1 = None
     temp2 = ''
     
-    if in_lan == "1":
-        pass
+     if in_lan == "1":
+        temp1 = C.Extraction(code)
     elif in_lan == "2":
         temp1 = CS.Extraction(code)
     elif in_lan == "3":
-        pass
+        temp1 = CPP.Extraction(code)
     elif in_lan == "4":
-        pass
+        temp1 = Python.Extraction(code)
     elif in_lan == "5":
         temp1 = Java.Extraction(code)
     
     if out_lan == "1":
-        pass
+        temp2 = C.ConvertCode(temp1)
     elif out_lan == "2":
-        temp2 = CS.ConvertCodeToCS(temp1, 0)
+        temp2 = CS.ConvertCode(temp1)
     elif out_lan == "3":
-        pass
+        temp2 = CPP.ConvertCode(temp1)
     elif out_lan == "4":
-        temp2 = Python.ConvertCodeToPython(temp1, 0)
+        temp2 = Python.ConvertCode(temp1)
     elif out_lan == "5":
-        temp2 = Java.ConvertCodeToJava(temp1, 0)
+        temp2 = Java.ConvertCode(temp1)
     
     return temp2
 
