@@ -13,7 +13,7 @@ AnnounceOperator = ["=", "+=", "-=", "++", "--"]
 StartRange = ["(", "{", "["]
 EndRange = [")", "}", "]"]
 CPPAccessModifier = ["public", "private", "protected"]
-CPPDataType = ["int", "string", "long", "char", "bool", "double", "shot", "float"]
+CPPDataType = ["int", "long", "char", "bool", "double", "short", "float"]
 CPPStatic = ["static"]
 
 ContainAll = CPPAccessModifier + CPPDataType + CPPStatic
