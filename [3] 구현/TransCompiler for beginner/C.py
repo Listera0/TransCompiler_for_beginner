@@ -13,7 +13,7 @@ AnnounceOperator = ["=", "+=", "-=", "++", "--"]
 StartRange = ["(", "{", "["]
 EndRange = [")", "}", "]"]
 CAccessModifier = ["public", "private", "protected", "default"]
-CDataType = ["int", "string", "long", "char", "bool", "double", "shot", "float"]
+CDataType = ["int", "long", "char", "bool", "double", "short", "float"]
 CStatic = ["static"]
 
 ContainAll = CAccessModifier + CDataType + CStatic
