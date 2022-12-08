@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang = "ko">
+
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+        content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+
+    <title>
+        TransCompiler for beginner
+    </title>
+
+        <style>
+                #my-input {visibility: hidden;}
+            .select {margin-left : auto; margin-right : 325px; width : 100pt; height : 30pt}
+            .select2 {margin-left : 325px; width : 100pt; height : 30pt}
+
+            label[for="open_source_code"]{
+                padding: 6px 25px;
+                background-color:#FF6600;
+                border-radius: 4px;
+                color: white;
+                cursor: pointer;
+              }
+
+            label[for="save"]{
+                padding: 6px 25px;
+                background-color:#FF6600;
+                border-radius: 4px;
+                color: white;
+                cursor: pointer;
+              }
+        </style> 
+            <!--Bootstrap 5 CSS -->
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3" crossorigin="anonymous">
+
+        <style>
+          .select {margin-left : 275px; margin-right : 100px; width : 105pt; height : 30pt}
+          .select2 {margin-left : 550px; width : 105pt; height : 30pt}
+      </style> 
+
+</head>
+
+<body>
+    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+        <div class="container-fluid">
+          <a class="navbar-brand" href="#">TransCompiler <font size="2em">for beginner</font></a>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+          </button>
+          <div class="collapse navbar-collapse" id="navbarSupportedContent">
+            <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+              <li class="nav-item">
+                <a class="nav-link active" aria-current="page" href="#">Home</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="#">Link</a>
+              </li>
+              <li class="nav-item dropdown">
+                <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                  Dropdown
+                </a>
+                <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
+                  <li><a class="dropdown-item" href="#">Action</a></li>
+                  <li><a class="dropdown-item" href="#">Another action</a></li>
+                  <li><hr class="dropdown-divider"></li>
+                  <li><a class="dropdown-item" href="#">Something else here</a></li>
+                </ul>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link disabled">Disabled</a>
+              </li>
+            </ul>
+            <form class="d-flex">
+              <input class="form-control me-2" type="search" placeholder="Search" aria-label="Search">
+              <button class="btn btn-outline-success" type="submit">Search</button>
+            </form>
+          </div>
+        </div>
+      </nav>
+
+    
+    
+      <div style="display:flex; flex-direction : row; padding:20px; margin-top : 20px; flex-wrap: wrap; justify-content: space-evenly">
+        <div style="display:flex; justify-content: center">
+            <form>
+                    <textarea name="input_source_code" style = "resize: none; font-size: 15px; width : 350pt; height : 300pt;" placeholder = "번역 할 코드 입력" ></textarea>
+            </form>
+        </div>
+        <div class="trans" style="display:flex; align-items: center">
+         
+          <button
+          type="button"
+          style="color: #fff;     background-color: #21dc6d; font-size:2em; border-radius:0.5em; padding:5px 20px;"
+          >번역하기</button>
+          
+            
+        </div>
+        <div style="display:flex; justify-content: center">
+            <form>
+                <textarea name="output_source_code" style = "resize: none; font-size: 20px; width : 350pt; height : 300pt;" placeholder = "" ></textarea>
+            </form>
+        </div>
+    </div>
+    <p><select name = "input_language" class = "select">
+      <option value = "none" selected>==언어 선택==</option>
+      <option value = "1">C</option>
+      <option value = "2">C#</option>
+      <option value = "3">C++</option>
+      <option value = "4">Python</option>
+      <option value = "5">Java</option>
+  </select>
+
+  <select name = "output_language" class = "select2">
+      <option value = "none" selected>==언어 선택==</option>
+      <option value = "1">C</option>
+      <option value = "2">C#</option>
+      <option value = "3">C++</option>
+      <option value = "4">Python</option>
+      <option value = "5">Java</option>
+  </select>
+
+    <br>
+    <div style="display:flex; margin-left: 80px">
+        
+        <label className="open_source_code" for="open_source_code">
+            파일 열기
+        </label>
+        <input type="file" id="open_source_code" style="display:none"/>
+
+    </div>
+<br>
+
+    <div style="display:flex; margin-left: 80px">
+        
+      <label className="save" for="save">
+          저장하기
+      
+
+      </label>
+     </div>
+     <script> 
+
+      function doSaveAs(){ 
+      
+                      document.execCommand("SaveAs") 
+      
+      } 
+      
+      </script> 
+      
+      <form> 
+      
+      <input type="button" value="저장" onClick="doSaveAs()"> 
+      
+      </form> 
+     
+     
+
+  </div>
+
+
+    <script>    
+    </script>
+    
+</body>
+</html>
