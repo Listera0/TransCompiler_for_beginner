@@ -13,7 +13,7 @@ AnnounceOperator = ["=", "+=", "-=", "++", "--"]
 StartRange = ["(", "{", "["]
 EndRange = [")", "}", "]"]
 JavaAccessModifier = ["public", "private", "protected", "default"]
-JavaDataType = ["int", "String", "long", "char", "boolean", "double", "shot", "float"]
+JavaDataType = ["int", "String", "long", "char", "boolean", "double", "short", "float"]
 JavaStatic = ["static"]
 
 ContainAll = JavaAccessModifier + JavaDataType + JavaStatic
@@ -49,87 +49,121 @@ def ConvertCodeToBase( container ):
 ## 코드 결합
 def CombineCode( code, depth ):
     result = ""
+    announceC = 0
+    ifC = 0
+    forC = 0
+    whileC = 0
     
-    for i in range(0, len(code.Announces)):
-        temp = ""
-        temp += IndentSpace(depth)
-        
-        if code.Announces[i].AccessModifier != "default":
-            temp += code.Announces[i].AccessModifier + " "
-        if code.Announces[i].StaticModifier != "default":
-            temp += code.Announces[i].StaticModifier + " "
-        if code.Announces[i].DataType != "default" and code.Announces[i].ArrayValue == None:
-            temp += code.Announces[i].DataType + " "
-        elif code.Announces[i].DataType != "default" and code.Announces[i].ArrayValue != None:
-            temp += code.Announces[i].DataType + "[" + code.Announces[i].ArrayValue + "] "
-        temp += code.Announces[i].Name
-        if code.Announces[i].Value != None:
-            temp += " = "
-            temp += code.Announces[i].Value
-        temp += ";"
-        temp += "\n"
-        result += temp
-    
-    for i in range(0, len(code.IfMethods)):
-        temp = ""
-        
-        for j in range(0, len(code.IfMethods[i].Condition)):
+    for i in range(0, len(code.IndexList)):
+        if code.IndexList[i] == "Announce":
+            temp = ""
             temp += IndentSpace(depth)
             
-            if j != 0:
-                temp += "else "
+            if AlreadyUsed(code.UsingName, code.Announces[announceC].Name) == False:
+                if code.Announces[announceC].AccessModifier != "default":
+                    temp += code.Announces[announceC].AccessModifier + " "
+                if code.Announces[announceC].StaticModifier != "default":
+                    temp += code.Announces[announceC].StaticModifier + " "
+                if code.Announces[announceC].DataType != "default" and code.Announces[announceC].ArrayValue == None:
+                    temp += code.Announces[announceC].DataType + " "
+                elif code.Announces[announceC].DataType != "default" and code.Announces[announceC].ArrayValue != None:
+                    temp += code.Announces[announceC].DataType + "[" + code.Announces[announceC].ArrayValue + "] "
+                    
+                code.AddUsingName(code.Announces[announceC].Name)
+                
+            temp += code.Announces[announceC].Name
+            if code.Announces[announceC].Value != None:
+                temp += " = "
+                temp += code.Announces[announceC].Value
+            temp += ";"
+            temp += "\n"
+            result += temp
+            announceC += 1
             
-            temp += "if (" + code.IfMethods[i].Condition[j].Target + " " + code.IfMethods[i].Condition[j].Operator + code.IfMethods[i].Condition[j].Value + ")\n"
+        elif code.IndexList[i] == "IfMethod":
+            temp = ""
+        
+            for j in range(0, len(code.IfMethods[ifC].Condition)):
+                temp += IndentSpace(depth)
+                
+                if j != 0:
+                    temp += "else "
+                
+                temp += "if (" + code.IfMethods[ifC].Condition[j].Target + " " + code.IfMethods[ifC].Condition[j].Operator + " " + code.IfMethods[ifC].Condition[j].Value + ")\n"
+                
+                temp += IndentSpace(depth)+ "{\n"
+                depth += 1
+                code.IfMethods[ifC].Value[j].UsingName += code.UsingName
+                temp += ConvertCodeToJava(code.IfMethods[ifC].Value[j], depth)
+                depth -= 1
+                temp += IndentSpace(depth) + "}\n"
+                
+            if code.IfMethods[ifC].Else != None:
+                temp += IndentSpace(depth) + "else\n"
+                
+                temp += IndentSpace(depth) + "{\n"
+                depth += 1
+                code.IfMethods[ifC].Else.UsingName += code.UsingName
+                temp += ConvertCodeToJava(code.IfMethods[ifC].Else, depth) + "\n"
+                depth -= 1
+                temp += IndentSpace(depth) + "}\n"
+        
+            result += temp
+            ifC += 1
+            
+        elif code.IndexList[i] == "ForMethod":
+            temp = ""
+            temp += IndentSpace(depth)
+            
+            tempCon = Container()
+            
+            tempCon.AddAnnounces(code.ForMethods[forC].Announce)
+            tempCon.UsingName += code.UsingName
+            temp += "for(" + ConvertCodeToJava(tempCon, 0).replace('\n', '') + " " 
+            temp += code.ForMethods[forC].Condition.Target + " " + code.ForMethods[forC].Condition.Operator + " " + code.ForMethods[forC].Condition.Value + '; '
+            
+            tempCon = Container()
+            tempCon.AddAnnounces(code.ForMethods[forC].Operator)
+            tempCon.UsingName += code.UsingName
+            temp += ConvertCodeToJava(tempCon, 0).replace('\n', '').rstrip(';') + ")\n"
+            
+            del tempCon
             
             temp += IndentSpace(depth)+ "{\n"
             depth += 1
-            temp += ConvertCodeToJava(code.IfMethods[i].Value[j], depth)
+            code.ForMethods[forC].Value.UsingName += code.UsingName
+            temp += ConvertCodeToJava(code.ForMethods[forC].Value, depth)
             depth -= 1
             temp += IndentSpace(depth) + "}\n"
             
-        if code.IfMethods[i].Else != None:
-            temp += IndentSpace(depth) + "else\n"
+            result += temp
+            forC += 1
             
+        elif code.IndexList[i] == "WhileMethod":
+            temp = ""
+            temp += IndentSpace(depth)
+            
+            temp += "while(" + code.WhileMethods[whileC].Condition.Target + " " + code.WhileMethods[whileC].Condition.Operator + " " + code.WhileMethods[whileC].Condition.Value + ")\n"
             temp += IndentSpace(depth) + "{\n"
             depth += 1
-            temp += ConvertCodeToJava(code.IfMethods[i].Else, depth) + "\n"
+            code.WhileMethods[whileC].Value.UsingName += code.UsingName
+            temp += ConvertCodeToJava(code.WhileMethods[whileC].Value, depth)
             depth -= 1
             temp += IndentSpace(depth) + "}\n"
-    
-        result += temp
-        
-    for i in range(0, len(code.ForMethods)):
-        temp = ""
-        temp += IndentSpace(depth)
-        
-        tempCon = Container()
-        
-        tempCon.AddAnnounces(code.ForMethods[i].Announce)
-        
-        temp += "for(" + ConvertCodeToJava(tempCon, 0).replace('\n', '') + " " 
-        temp += code.ForMethods[i].Condition.Target + " " + code.ForMethods[i].Condition.Operator + " " + code.ForMethods[i].Condition.Value + '; '
-        
-        tempCon.Announces.clear()
-        tempCon.AddAnnounces(code.ForMethods[i].Operator)
-        
-        temp += ConvertCodeToJava(tempCon, 0).replace('\n', '') + ")\n"
-        
-        tempCon.Announces.clear()
-        
-        temp += IndentSpace(depth)+ "{\n"
-        depth += 1
-        temp += ConvertCodeToJava(code.ForMethods[i].Value, depth)
-        depth -= 1
-        temp += IndentSpace(depth) + "}\n"
-        
-        result += temp
-    
-    del code
+            
+            result += temp
+            whileC += 1
+            
     return result
 
 def IndentSpace(depth):
     return " " * (depth * 4)
 
+def AlreadyUsed(using, name):
+    for i in range(0, len(using)):
+        if using[i] == name:
+            return True
+    return False
 
 ## 주어진 코드 추출
 def Extraction( code ):
@@ -193,6 +227,17 @@ def Extraction( code ):
                     
                     finishindex = actionend + 1
                     
+                if word == "while":
+                    conditionstart = i + FindNextCharIndex(code[i : ], "(") + 1
+                    conditionend = i + FindRange(code[i : ], "(")
+                    
+                    actionstart = conditionend + FindNextCharIndex(code[conditionend : ], "{") + 1
+                    actionend = conditionend + FindRange(code[conditionend : ], "{")
+                    
+                    result.AddWhileMethods(ConvertWhileMethod(code[conditionstart : conditionend],code[actionstart : actionend]))
+                    
+                    finishindex = actionend + 1
+                    
     return ConvertCodeToBase(result)
 
 
@@ -231,11 +276,11 @@ def ConvertAnnounce(code):
                 result.ArrayValue = code[valueindex : i]
             
         if code[i] == '=':
-            result.Value = code[FindNextCharIndex(code[i + 1 : ], FindNextChar(code[i + 1 : ])) + i + 1 : FindNextCharIndex(code, ';')]
+            result.Value = code[FindNextCharIndex(code[i + 1 : ], FindNextChar(code[i + 1 : ])) + i + 1 : FindNextCharIndex(code, ';')].strip()
             return result
             
         elif code[i : i + 2] in AnnounceOperator:
-            result.Value = code[FindNextCharIndex(code[i + 2 : ], FindNextChar(code[i + 2 : ])) + i + 1 : FindNextCharIndex(code, ';')]
+            result.Value = code[FindNextCharIndex(code[i + 2 : ], FindNextChar(code[i + 2 : ])) + i + 1 : FindNextCharIndex(code, ';')].strip()
             return result
                             
     return result
@@ -257,7 +302,7 @@ def ConvertCondition(code):
         result.Operator = FindNextCharLength(code[index : ], 2)
         finishindex = index + FindNextCharIndex(code[index : ], FindNextChar(code[index : ])) + 2
         
-    result.Value = code[finishindex : ]
+    result.Value = code[finishindex : ].strip()
     
     return result
 
@@ -279,6 +324,14 @@ def ConvertForMethod(con, value):
     
     return result
 
+def ConvertWhileMethod(con, value):
+    result = While_Method()
+    
+    result.Condition = ConvertCondition(con)
+    result.Value = Extraction(value)
+    
+    return result
+
 def ConvertIfMethod(code):
     result = If_Method()
     result.Condition.clear()
@@ -290,11 +343,11 @@ def ConvertIfMethod(code):
         if FindNextWord(code[index : ]) == "if":
             startrange = index + FindNextCharIndex(code[index : ], "(") + 1
             conditionrange = index + FindRange(code[index : ], "(")
-            result.Condition.append(ConvertCondition(code[startrange : conditionrange]))
+            result.AddCondition(ConvertCondition(code[startrange : conditionrange]))
                     
             startrange = conditionrange + FindNextCharIndex(code[conditionrange : ], "{") + 1
             valuerange = conditionrange + FindRange(code[conditionrange : ], "{")
-            result.Value.append(Extraction(code[startrange : valuerange]))
+            result.AddValue(Extraction(code[startrange : valuerange]))
             
             index += valuerange + 1
             
@@ -302,11 +355,11 @@ def ConvertIfMethod(code):
             if FindNextCharLength(code[index + 4 : ], 2) == "if":
                 startrange = index + FindNextCharIndex(code[index : ], "(") + 1
                 conditionrange = index + FindRange(code[index : ], "(")
-                result.Condition.append(ConvertCondition(code[startrange : conditionrange]))
+                result.AddCondition(ConvertCondition(code[startrange : conditionrange]))
                     
                 startrange = conditionrange + FindNextCharIndex(code[conditionrange : ], "{") + 1
                 valuerange = conditionrange + FindRange(code[conditionrange : ], "{")
-                result.Value.append(Extraction(code[startrange : valuerange]))
+                result.AddValue(Extraction(code[startrange : valuerange]))
                 
                 index += valuerange + 1
             else:
@@ -402,16 +455,29 @@ class Container():
         self.Announces = []
         self.IfMethods = []
         self.ForMethods = []
+        self.WhileMethods = []
+        self.IndexList = []
+        self.UsingName = []
         
     def AddAnnounces(self, announce):
         self.Announces.append(announce)
+        self.IndexList.append("Announce")
         
     def AddIfMethods(self, ifmethod):
         self.IfMethods.append(ifmethod)
+        self.IndexList.append("IfMethod")
         
-    def AddForMethods(self, ifmethod):
-        self.ForMethods.append(ifmethod)
+    def AddForMethods(self, formethod):
+        self.ForMethods.append(formethod)
+        self.IndexList.append("ForMethod")
         
+    def AddWhileMethods(self, whilemethod):
+        self.WhileMethods.append(whilemethod)
+        self.IndexList.append("WhileMethod")
+        
+    def AddUsingName(self, usingname):
+        self.UsingName.append(usingname)
+     
 ## 선언문
 class Announce():
     AccessModifier = "default"
@@ -450,4 +516,8 @@ class For_Method():
     Announce = None
     Condition = None
     Operator = None
+    Value = None
+    
+class While_Method():
+    Condition = None
     Value = None

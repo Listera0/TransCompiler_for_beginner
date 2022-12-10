@@ -10,11 +10,13 @@ WordEndList = [" ", "=", ";", "(", ")", "{", "}", "[", "]", ">", "<", "\n", "\r"
 
 ConditionOperator = [">", "<", ">=", "<=", "==", "!="]
 AnnounceOperator = ["=", "+=", "-="]
-StartRange = ["(", "{", "["]
-EndRange = [")", "}", "]"]
+StartRange = ["(", "{", "[", ":"]
+EndRange = [")", "}", "]", ":"]
 PythonAccessModifier = ["_", "__"]
-PythonDataType = ["int", "string", "long", "char", "bool", "double", "shot", "float"]
+PythonDataType = ["int", "string", "long", "char", "bool", "double", "short", "float"]
 PythonStatic = ["static"]
+
+MethodStartList = ["if", "for", "while"]
 
 ContainAll = PythonAccessModifier + PythonDataType + PythonStatic
 
@@ -47,75 +49,97 @@ def ConvertCodeToBase( container ):
     return result
 
 ## 코드 결합
-def CombineCode( code, depth):
+def CombineCode( code, depth ):
     result = ""
+    announceC = 0
+    ifC = 0
+    forC = 0
+    whileC = 0
     
-    for i in range(0, len(code.Announces)):
-        temp = ""
-        temp += IndentSpace(depth)
-        
-        if code.Announces[i].AccessModifier != "default":
-            temp += code.Announces[i].AccessModifier
-        if code.Announces[i].StaticModifier != "default":
-            temp += code.Announces[i].StaticModifier + " "
-        temp += code.Announces[i].Name
-        if code.Announces[i].Value != None:
-            temp += " = "
-            temp += code.Announces[i].Value
-        temp += "\n"
-        result += temp
-        
-    for i in range(0, len(code.IfMethods)):
-        temp = ""
-        
-        for j in range(0, len(code.IfMethods[i].Condition)):
+    for i in range(0, len(code.IndexList)):
+        if code.IndexList[i] == "Announce":
+            temp = ""
             temp += IndentSpace(depth)
             
-            if j != 0:
-                temp += "el"
+            ## if AlreadyUsed(code.UsingName, code.Announces[announceC].Name) == False:
+            if code.Announces[announceC].AccessModifier != "default":
+                temp += code.Announces[announceC].AccessModifier    
             
-            temp += "if " + code.IfMethods[i].Condition[j].Target + " " + code.IfMethods[i].Condition[j].Operator + " " + code.IfMethods[i].Condition[j].Value + ":\n"
+            temp += code.Announces[announceC].Name
+            if code.Announces[announceC].Value != None:
+                temp += " = "
+                temp += code.Announces[announceC].Value
+            temp += "\n"
+            result += temp
+            announceC += 1
+            
+        elif code.IndexList[i] == "IfMethod":
+            temp = ""
+        
+            for j in range(0, len(code.IfMethods[ifC].Condition)):
+                temp += IndentSpace(depth)
+                
+                if j != 0:
+                    temp += "el"
+                
+                temp += "if " + code.IfMethods[ifC].Condition[j].Target + " " + code.IfMethods[ifC].Condition[j].Operator + " " + code.IfMethods[ifC].Condition[j].Value + ":\n"
+                depth += 1
+                code.IfMethods[ifC].Value[j].UsingName += code.UsingName
+                temp += ConvertCodeToPython(code.IfMethods[ifC].Value[j], depth)
+                depth -= 1
+                temp += IndentSpace(depth) + "\n"
+                
+            if code.IfMethods[ifC].Else != None:
+                temp += IndentSpace(depth) + "else:\n"
+                depth += 1
+                code.IfMethods[ifC].Else.UsingName += code.UsingName
+                temp += ConvertCodeToPython(code.IfMethods[ifC].Else, depth) + "\n"
+                depth -= 1
+                temp += IndentSpace(depth) + "\n"
+                
+            result += temp
+            ifC += 1
+            
+        elif code.IndexList[i] == "ForMethod":
+            temp = ""
+            temp += IndentSpace(depth)
+            
+            temp += "for " + code.ForMethods[forC].Announce.Name + " in range(" + code.ForMethods[forC].Announce.Value + "," + code.ForMethods[forC].Condition.Value + "):\n"
             
             depth += 1
-            temp += CombineCode(code.IfMethods[i].Value[j], depth)
+            code.ForMethods[forC].Value.UsingName += code.UsingName
+            temp += ConvertCodeToPython(code.ForMethods[forC].Value, depth)
             depth -= 1
             temp += IndentSpace(depth) + "\n"
             
-        if code.IfMethods[i].Else != None:
-            temp += IndentSpace(depth) + "else:\n"
-            depth += 1
-            temp += CombineCode(code.IfMethods[i].Else, depth) + "\n"
-            depth -= 1
-            temp += IndentSpace(depth) + "\n"
+            result += temp
+            forC += 1
             
-        result += temp
-        
-    for i in range(0, len(code.ForMethods)):
-        temp = ""
-        temp += IndentSpace(depth)
-        
-        temp += "for " + code.ForMethods[i].Announce.Name + " in range(" + code.ForMethods[i].Announce.Value + "," + code.ForMethods[i].Condition.Value + "):\n"
-        
-        depth += 1
-        temp += ConvertCodeToPython(code.ForMethods[i].Value, depth)
-        depth -= 1
-        temp += IndentSpace(depth) + "\n"
-        
-        result += temp
-    
-        
-    del code
+        elif code.IndexList[i] == "WhileMethod":
+            temp = ""
+            temp += f"while {code.WhileMethods[whileC].Condition.Target} {code.WhileMethods[whileC].Condition.Operator} {code.WhileMethods[whileC].Condition.Value}:\n"
+            depth += 1
+            code.WhileMethods[whileC].Value.UsingName += code.UsingName
+            temp += ConvertCodeToPython(code.WhileMethods[whileC].Value, depth)
+            depth -= 1
+            temp += f"{IndentSpace(depth)}\n"
+            
+            result += temp
+            whileC += 1
+            
     return result
 
 def IndentSpace(depth):
     return " " * (depth * 4)
 
-
+def AlreadyUsed(using, name):
+    for i in range(0, len(using)):
+        if using[i] == name:
+            return True
+    return False
 
 ## 주어진 코드 추출
-def Extraction( code ):
-    code += "     "
-    
+def Extraction( code ):    
     result = Container()
     
     word = None
@@ -124,101 +148,140 @@ def Extraction( code ):
     ismethod = False
     isannounce = False
     
+    Flag = 0
+    
     wordindex = 0
     
     finishindex = 0
     
-    for i in range(0, len(code)):
-        ## 단어 찾기
+    code = code.replace('\r', '')
+    if code[-1] == '\n':
+        code = code.rstrip('\n')
+    splitcode = code.split('\n')
+    
+    for i in range(0, len(splitcode)):
+        indent = FindNextCharIndex(splitcode[i], FindNextChar(splitcode[i]))
+        
         if i >= finishindex:
-            if isword == False and ismethod == False and isannounce == False and code[i] not in WordEndList:
-                wordindex = i
-                isword = True
-            
-            if isword and code[i] in WordEndList:
-                word = code[wordindex : i]
-                isword = False
-                
-                if word not in PythonAccessModifier and word != "static":
-                    ## 선언문의 경우
-                    if FindNextChar(code[i : ]) == '=' or FindNextCharLength(code[i : ], 2) in AnnounceOperator:
-                        result.AddAnnounces(ConvertAnnounce(code[finishindex : i + (FindNextCharIndex(code[i : ], '\n'))]))
-                        
-                        finishindex = (i + 1 + FindNextCharIndex(code[i : ], '\n'))
-                
-                ## if 문의 경우
-                if word == "if":
-                    pointA = i
-                    
-                    while True:
-                        pointA += FindNextCharIndex(code[pointA : ], ":")
-                        
-                        if FindNextCharLength(code[pointA + 1 : ], 2) == "el":
-                            continue
-                        
+            if FindNextWord(splitcode[i]) == "if":
+                for j in range(i + 1, len(splitcode)):
+                    if FindNextCharIndex(splitcode[j], FindNextChar(splitcode[j])) < indent:
+                        tempcode = ""
+                        for n in range(i, j):
+                            tempcode += splitcode[n] + "\n"
+                        tempcode = tempcode.rstrip('\n')
+                        result.AddIfMethods(ConvertIfMethod(tempcode))
+                        finishindex = j
+                        Flag = 1
                         break
-                    
-                    result.AddIfMethods(ConvertIfMethod(code[wordindex : pointA + 1]))
-                    
-                    finishindex = pointA + 1
+                            
+                    if FindNextCharIndex(splitcode[j], FindNextChar(splitcode[j])) == indent:
+                        if FindNextWord(splitcode[j]) != "elif" and FindNextWord(splitcode[j]) != "else":
+                            tempcode = ""
+                            for n in range(i, j):
+                                tempcode += splitcode[n] + "\n"
+                            tempcode = tempcode.rstrip('\n')
+                            result.AddIfMethods(ConvertIfMethod(tempcode))
+                            finishindex = j
+                            Flag = 1
+                            break
                 
-                # for 문의 경우
-                if word == "for":
-                    conditionstart = i + FindNextCharIndex(code[i : ], "(") + 1
-                    conditionend = i + FindRange(code[i : ], "(")
+                if Flag == 0:          
+                    tempcode = ""
+                    for n in range(i, len(splitcode)):
+                        tempcode += splitcode[n] + "\n"
+                    tempcode = tempcode.rstrip('\n')
+                    result.AddIfMethods(ConvertIfMethod(tempcode))
+                    finishindex = len(splitcode)
+                    break
+                else:
+                    Flag = 0               
+            
+            elif FindNextWord(splitcode[i]) == "for":
+                for j in range(i + 1, len(splitcode)):
+                    if FindNextCharIndex(splitcode[j], FindNextChar(splitcode[j])) <= indent:
+                        tempcode = ""
+                        for n in range(i, j):
+                            tempcode += splitcode[n] + "\n"
+                        tempcode = tempcode.rstrip('\n')
+                        result.AddForMethods(ConvertForMethod(tempcode))
+                        finishindex = j
+                        Flag = 1
+                        break
+                
+                if Flag == 0:
+                    tempcode = ""
+                    for n in range(i, len(splitcode)):
+                        tempcode += splitcode[n] + "\n"
+                    tempcode = tempcode.rstrip('\n')
+                    result.AddForMethods(ConvertForMethod(tempcode))
+                    finishindex = len(splitcode)
+                    break
+                else:
+                    Flag == 0
                     
-                    actionstart = conditionend + FindNextCharIndex(code[conditionend : ], "{") + 1
-                    actionend = conditionend + FindRange(code[conditionend : ], "{")
-                    
-                    result.AddForMethods(ConvertForMethod(code[conditionstart : conditionend], code[actionstart : actionend]))
-                    
-                    finishindex = actionend + 1
-                    
+            elif FindNextWord(splitcode[i]) == "while":
+                for j in range(i + 1, len(splitcode)):
+                    if FindNextCharIndex(splitcode[j], FindNextChar(splitcode[j])) <= indent:
+                        tempcode = ""
+                        for n in range(i, j):
+                            tempcode += splitcode[n] + "\n"
+                        tempcode = tempcode.rstrip('\n')
+                        result.AddWhileMethods(ConvertWhileMethod(tempcode))
+                        finishindex = j
+                        Flag = 1
+                        break
+                
+                if Flag == 0:
+                    tempcode = ""
+                    for n in range(i, len(splitcode)):
+                        tempcode += splitcode[n] + "\n"
+                    tempcode = tempcode.rstrip('\n')
+                    result.AddWhileMethods(ConvertWhileMethod(tempcode))
+                    finishindex = len(splitcode)
+                    break
+                else:
+                    Flag == 0
+            
+            else:
+                if FindNextWord(splitcode[i]) != None:
+                    result.AddAnnounces(ConvertAnnounce(splitcode[i]))
+                    pass
+               
     return ConvertCodeToBase(result)
 
 
 ## 선언문 변환
 def ConvertAnnounce(code):
     result = Announce()
-    startword = False
-    startvalue = False
-    startindex = 0
-    valueindex = 0
     
-    for i in range(0, len(code)):
-        if startword == False and startvalue == False and code[i] not in WordEndList:
-            startindex = i
-            startword = True
-            
-        if startword and code[i] in WordEndList:
-            word = code[startindex : i]
-            startword = False
-            
-            if word not in ContainAll:
-                result.Name = word
-            
-            if word in PythonAccessModifier:
-                result.AccessModifier = word
-            elif word == "static":
-                result.StaticModifier = word
-            elif word in PythonDataType:
-                result.DataType = word
-                if FindNextChar(code[i : ]) == '[':
-                    startvalue = True
-                    valueindex = (i + 1)
-            
-            if startvalue and code[i] == ']':
-                startvalue = False
-                result.ArrayValue = code[valueindex : i]
-            
-        if code[i] == '=':
-            result.Value = code[FindNextCharIndex(code[i + 1 : ], FindNextChar(code[i + 1 : ])) + i + 1 : FindNextCharIndex(code, ';')]
-            return result
-            
-        elif code[i : i + 2] in AnnounceOperator:
-            result.Value = code[FindNextCharIndex(code[i + 2 : ], FindNextChar(code[i + 2 : ])) + i + 1 : FindNextCharIndex(code, ';')]
-            return result
-                            
+    code = code.replace('\n', '')
+     
+    result.Name = FindNextWord(code)
+    
+    if FindNextWord(code)[ : 2] == "__":
+        result.AccessModifier = "__"
+        result.Name = FindNextWord(code)[2 : ]
+    elif FindNextWord(code)[ : 1] == "_":
+        result.AccessModifier = "_"
+        result.Name = FindNextWord(code)[1 : ]
+    else:
+        result.AccessModifier = "default"
+    
+    result.Value = code[FindNextCharIndex(code, "=") + 1 : ].strip()
+    
+    if result.Value[ : 1] == "\"":
+        result.DataType = "string"
+    elif result.Value[ : 1] == "\'":
+        result.DataType = "char"
+    elif result.Value == "False" or result.Value == "True":
+        result.DataType = "bool"
+    else:
+        result.DataType = "int"
+        for i in range(len(result.Value)):
+            if result.Value[i] == ".":
+                result.DataType = "float"
+                    
     return result
 
 ## 조건문 변환
@@ -238,68 +301,120 @@ def ConvertCondition(code):
         result.Operator = FindNextCharLength(code[index : ], 2)
         finishindex = index + FindNextCharIndex(code[index : ], FindNextChar(code[index : ])) + 2
         
-    result.Value = code[finishindex : ]
+    result.Value = code[finishindex : ].strip()
     
     return result
 
-def ConvertForMethod(con, value):
+
+def ConvertForMethod(code):
     result = For_Method()
     
-    start = 0
-    end = FindNextCharIndex(con[start : ], ';')
-    result.Announce = ConvertAnnounce(con[start : end + 1])
+    splitcode = code.split('\n')
     
-    start = end + 1
-    end = start + FindNextCharIndex(con[start : ], ';')
-    result.Condition = ConvertCondition(con[start : end])
+    index = FindNextWordLastIndex(splitcode[0])                                 ## for 거름
+    name = FindNextChar(splitcode[0][index : ])                                 ## name
     
-    start = end + 1
-    result.Operator = ConvertAnnounce((con[start : ] + ';')) 
+    index += FindNextWordLastIndex(splitcode[0][index : ])                      ## name 거름
+    index += FindNextWordLastIndex(splitcode[0][index : ])                      ## in 거름
     
-    result.Value = Extraction(value)
+    index += FindNextCharIndex(splitcode[0][index : ], '(') + 1                     ## range 거름
+    x = splitcode[0][index : index + FindNextCharIndex(splitcode[0][index : ], ',')]    ## x
+    
+    index += FindNextCharIndex(splitcode[0][index : ], ',') + 1                     ## , 거름
+    y = splitcode[0][index : index + FindNextCharIndex(splitcode[0][index : ], ')')]    ## y
+    
+    result.Announce = ConvertAnnounce(name + " = " + str(x))
+    result.Condition = ConvertCondition(name + " < " + str(y))
+    result.Operator = ConvertAnnounce(f"{name} = {name} + 1")
+    
+    tempcode = ""
+    for n in range(1, len(splitcode)):
+        tempcode += splitcode[n] + "\n"
+    tempcode = tempcode.rstrip('\n')
+    result.Value = Extraction(tempcode)
+    
+    return result
+
+def ConvertWhileMethod(code):
+    result = While_Method()
+    
+    splitcode = code.split('\n')
+    
+    start = FindNextWordLastIndex(splitcode[0])
+    end = FindNextCharIndex(splitcode[0], ':')
+    
+    result.Condition = ConvertCondition(splitcode[0][start : end])
+    
+    tempcode = ""
+    for n in range(1, len(splitcode)):
+        tempcode += splitcode[n] + "\n"
+    tempcode = tempcode.rstrip('\n')
+    result.Value = Extraction(tempcode)
     
     return result
 
 def ConvertIfMethod(code):
     result = If_Method()
-    result.Condition.clear()
-    result.Value.clear()
     
-    index = 0
+    splitcode = code.split('\n')
+    indent = FindNextCharIndex(splitcode[0], FindNextChar(splitcode[0]))
+    finishindex = 0
     
-    for i in range(len(code)):
-        if FindNextWord(code[index : ]) == "if":
-            startrange = index + FindNextCharIndex(code[index : ], "(") + 1
-            conditionrange = index + FindRange(code[index : ], "(")
-            result.Condition.append(ConvertCondition(code[startrange : conditionrange]))
-                    
-            startrange = conditionrange + FindNextCharIndex(code[conditionrange : ], "{") + 1
-            valuerange = conditionrange + FindRange(code[conditionrange : ], "{")
-            result.Value.append(Extraction(code[startrange : valuerange]))
-            
-            index += valuerange + 1
-            
-        elif FindNextWord(code[index : ]) == "else":
-            if FindNextCharLength(code[index + 4 : ], 2) == "if":
-                startrange = index + FindNextCharIndex(code[index : ], "(") + 1
-                conditionrange = index + FindRange(code[index : ], "(")
-                result.Condition.append(ConvertCondition(code[startrange : conditionrange]))
-                    
-                startrange = conditionrange + FindNextCharIndex(code[conditionrange : ], "{") + 1
-                valuerange = conditionrange + FindRange(code[conditionrange : ], "{")
-                result.Value.append(Extraction(code[startrange : valuerange]))
+    for i in range(0, len(splitcode)):
+        if i >= finishindex:
+            if FindNextWord(splitcode[i]) == "if":
+                result.AddCondition(ConvertCondition(splitcode[i][FindNextWordLastIndex(splitcode[i]) + 1 : FindNextCharIndex(splitcode[i], ':')]))
+                for j in range(i + 1, len(splitcode)):
+                    if FindNextCharIndex(splitcode[j], FindNextChar(splitcode[j])) < indent + 4:
+                        tempcode = ""
+                        for n in range(i + 1, j):
+                            tempcode += splitcode[n] + "\n"
+                        tempcode = tempcode.rstrip('\n')
+                        result.AddValue(Extraction(tempcode))
+                        finishindex = j
+                        break
+                tempcode = ""
+                for n in range(i + 1, len(splitcode)):
+                    tempcode += splitcode[n] + "\n"
+                tempcode = tempcode.rstrip('\n')
+                result.AddValue(Extraction(tempcode))
+                finishindex = len(splitcode)
+                        
+            elif FindNextWord(splitcode[i]) == "elif":
+                result.AddCondition(ConvertCondition(splitcode[i][FindNextWordLastIndex(splitcode[i]) : FindNextCharIndex(splitcode[i], ':')]))
+                for j in range(i + 1, len(splitcode)):
+                    if FindNextCharIndex(splitcode[j], FindNextChar(splitcode[j])) < indent + 4:
+                        tempcode = ""
+                        for n in range(i + 1, j):
+                            tempcode += splitcode[n] + "\n"
+                        tempcode = tempcode.rstrip('\n')
+                        result.AddValue(Extraction(tempcode))
+                        finishindex = j
+                        break
+                tempcode = ""
+                for n in range(i + 1, len(splitcode)):
+                    tempcode += splitcode[n] + "\n"
+                tempcode = tempcode.rstrip('\n')
+                result.AddValue(Extraction(tempcode))
+                finishindex = len(splitcode)    
                 
-                index += valuerange + 1
-            else:
-                startrange = index + FindNextCharIndex(code[index : ], "{") + 1
-                valuerange = index + FindRange(code[index : ], "{")
-                result.Else = Extraction(code[startrange : valuerange])
+                        
+            elif FindNextWord(splitcode[i]) == "else":
+                for j in range(i + 1, len(splitcode)):
+                    if FindNextCharIndex(splitcode[j], FindNextChar(splitcode[j])) < indent + 4:
+                        tempcode = ""
+                        for n in range(i + 1, j):
+                            tempcode += splitcode[n] + "\n"
+                        result.Else = Extraction(tempcode)
+                        finishindex = j
+                        break
+                tempcode = ""
+                for n in range(i + 1, len(splitcode)):
+                    tempcode += splitcode[n] + "\n"
+                tempcode = tempcode.rstrip('\n')
+                result.Else = Extraction(tempcode)
+                finishindex = len(splitcode)
                 
-                break
-                
-        else:
-            break
-    
     return result
 
 ## (코드 추출 추가 메소드) 바로 다음의 글자 찾기 
@@ -314,7 +429,7 @@ def FindNextCharLength( code, count ):
     for i in range( 0, len(code) ):
         if code[i] != ' ' and code[i] != '\n' and code[i] != '\n':
             return code[i : i + count]
-    return 0
+    return "0"
 
 ## (코드 추출 추가 메소드) target 글자의 위치 찾기
 def FindNextCharIndex( code, target ):
@@ -376,7 +491,6 @@ def FindRange( code, startrange ):
         
     return 0
 
-
 ## 목록
 class Container():
     
@@ -384,16 +498,29 @@ class Container():
         self.Announces = []
         self.IfMethods = []
         self.ForMethods = []
+        self.WhileMethods = []
+        self.IndexList = []
+        self.UsingName = []
         
     def AddAnnounces(self, announce):
         self.Announces.append(announce)
+        self.IndexList.append("Announce")
         
     def AddIfMethods(self, ifmethod):
         self.IfMethods.append(ifmethod)
+        self.IndexList.append("IfMethod")
         
-    def AddForMethods(self, ifmethod):
-        self.ForMethods.append(ifmethod)
+    def AddForMethods(self, formethod):
+        self.ForMethods.append(formethod)
+        self.IndexList.append("ForMethod")
         
+    def AddWhileMethods(self, whilemethod):
+        self.WhileMethods.append(whilemethod)
+        self.IndexList.append("WhileMethod")
+        
+    def AddUsingName(self, usingname):
+        self.UsingName.append(usingname)
+       
 ## 선언문
 class Announce():
     AccessModifier = "default"
@@ -434,4 +561,8 @@ class For_Method():
     Announce = None
     Condition = None
     Operator = None
+    Value = None
+    
+class While_Method():
+    Condition = None
     Value = None

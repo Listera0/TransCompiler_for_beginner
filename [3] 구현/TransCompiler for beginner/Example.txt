@@ -1,7 +1,7 @@
 static int i = 0;
+private char ox = 'O';
 public string name = "HO";
 protected bool isture = True;
-private char OX = 'O';
 
 
 int i = 0;
@@ -10,6 +10,7 @@ if(i == 0)
     i = 1;
 }
 
+
 int j = 0;
 for(int i = 0; i < 10; i = i + 1)
 {
@@ -17,3 +18,7 @@ for(int i = 0; i < 10; i = i + 1)
 }
 
 env\Scripts\activate.bat
+
+flask run
+
+Debug 목록
