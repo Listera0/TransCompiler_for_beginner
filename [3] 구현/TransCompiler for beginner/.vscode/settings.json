@@ -21,6 +21,7 @@
         "startvalue",
         "startvar",
         "startword",
+        "submitvalue",
         "valueindex",
         "varindex",
         "wordindex",

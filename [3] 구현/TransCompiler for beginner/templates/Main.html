@@ -49,15 +49,14 @@
                                 <option value = "5">Java</option>
                             </select>
                         </div>
-              
                 </div>
 
                 <div style="display:flex; align-items: center; padding: 30px;">
-                    <button id = "change_code" class="btn btn-outline-dark" type="submit">&#8651</button>          
+                  <input type = "submit" name = "submit_type" value = &#8651>
                 </div>
                 
                   <div style="display:flex; flex-direction: column;  align-items: center;">
-                    <textarea id = "output_field" name="output_source_code" style = "resize: none; font-size: 20px; width : 400pt; height : 500pt;" placeholder = "" >{{value}}</textarea>
+                    <textarea id = "output_field" name="output_field" style = "resize: none; font-size: 20px; width : 400pt; height : 500pt;" placeholder = "" >{{value}}</textarea>
                     <br>
                     <div style="display:flex, flex-direction:row; padding-right: 103px; justify-content: flex-end;">
                     <select name = "output_language" class = "select">
@@ -71,10 +70,6 @@
                 </div>
                 </div>
             </div>
-                <center> <input type = "submit" value = "번역" style = "width : 60pt; height : 30pt">  </center>
-
-        </form>
-
-
+                <center> <input type = "submit" name = "submit_type" value = "번역" style = "width : 60pt; height : 30pt">  </center>
     </body>
 </html>
