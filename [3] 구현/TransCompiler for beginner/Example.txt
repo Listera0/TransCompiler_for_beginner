@@ -1,7 +1,7 @@
 static int i = 0;
+public string name = "Hi";
+protected bool istrue = True;
 private char ox = 'O';
-public string name = "HO";
-protected bool isture = True;
 
 
 int i = 0;
@@ -11,21 +11,20 @@ if(i == 0)
 }
 
 int j = 0;
-for(int i = 0; i < 10; i = i + 1)
+for(int i = 0; i < 10; int i = i + 1)
 {
-    j = j + i;
-}
-
-int k = 0;
-while(k < 5)
-{
-    k = k + 1;
-}
-
-if(i == 0)
-{
-    if(j == 0)
+    if (i == 5)
     {
-        k = 1;
+        j = j + i;
+    }
+}
+
+int i = 0;
+while(i < 10)
+{
+    i = i + 1;
+    if (i == 5)
+    {
+        j = j + 1;
     }
 }
