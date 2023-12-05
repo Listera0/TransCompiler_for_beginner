@@ -1,5 +1,5 @@
 # TransCompiler for beginner
-Seoil Univercity Term Project Team TC
+-Seoil Univercity Term Project Team TC-
 
 
 This project for user who want to translate program language to other language
